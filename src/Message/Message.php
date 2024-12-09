@@ -10,10 +10,11 @@ final class Message implements MessageInterface
 {
     public function __construct(
         private string $handlerName,
-        private mixed $data,
-        private array $metadata,
-        private int $delay = 0 //delay in seconds
-    ) {
+        private mixed  $data,
+        private array  $metadata,
+        private int    $delay = 0 //delay in seconds
+    )
+    {
         if ($this->delay > 0) {
             $this->metadata['delay'] = $delay;
         }
@@ -39,5 +40,10 @@ final class Message implements MessageInterface
     public function getMetadata(): array
     {
         return $this->metadata;
+    }
+
+    public static function fromData(string $handlerName, mixed $data, array $metadata = []): MessageInterface
+    {
+        return new self($handlerName, $data, $metadata, $metadata['delay'] ? (int)$metadata['delay'] : 0);
     }
 }

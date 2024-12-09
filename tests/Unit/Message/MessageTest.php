@@ -40,4 +40,15 @@ class MessageTest extends TestCase
         $this->assertNotSame($message, $delayedMessage);
         $this->assertEquals(5, $delayedMessage->getMetadata()['delay']);
     }
+
+    public function testFromData(): void
+    {
+        $message = Message::fromData('test-handler', ['data' => 'test-data'], ['delay' => 2]);
+        self::assertEquals('test-handler', $message->getHandlerName());
+        self::assertEquals(['data' => 'test-data'], $message->getData());
+        self::assertEquals(['delay' => 2], $message->getMetadata());
+
+        $message = Message::fromData('test-handler', ['data' => 'test-data'], ['delay' => '3']);
+        self::assertEquals(['delay' => 3], $message->getMetadata());
+    }
 }
