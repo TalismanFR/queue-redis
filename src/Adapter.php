@@ -14,11 +14,12 @@ use Yiisoft\Queue\Message\MessageSerializerInterface;
 final class Adapter implements AdapterInterface
 {
     public function __construct(
-        private QueueProviderInterface $provider,
+        private QueueProviderInterface     $provider,
         private MessageSerializerInterface $serializer,
-        private LoopInterface $loop,
-        private int $timeout = 3
-    ) {
+        private LoopInterface              $loop,
+        private int                        $timeout = 3
+    )
+    {
     }
 
     public function runExisting(callable $handlerCallback): void
@@ -66,15 +67,18 @@ final class Adapter implements AdapterInterface
 
     public function subscribe(callable $handlerCallback): void
     {
-        while ($this->loop->canContinue()) {
+        $continue = true;
+        while ($continue) {
             $message = $this->reserve();
             if (null === $message) {
+                $continue = $this->loop->canContinue();
                 continue;
             }
 
             $result = $handlerCallback($message);
-            if ($result) {
-                $this->provider->delete((string) $message->getId());
+            $this->provider->delete((string) $message->getId());
+            if (!$result) {
+                $continue = false;
             }
         }
     }
@@ -98,5 +102,10 @@ final class Adapter implements AdapterInterface
         $envelope->setId($reserve->id);
 
         return $envelope;
+    }
+
+    public function getChannelName(): string
+    {
+        return $this->provider->getChannelName();
     }
 }

@@ -17,7 +17,8 @@ class QueueProvider implements QueueProviderInterface
     public function __construct(
         private \Redis $redis, //redis connection,
         private string $channelName = self::DEFAULT_CHANNEL_NAME
-    ) {
+    )
+    {
     }
 
     /**
@@ -144,5 +145,10 @@ class QueueProvider implements QueueProviderInterface
         if (!$this->redis->isConnected()) {
             throw new NotConnectedRedisException('Redis is not connected.');
         }
+    }
+
+    public function getChannelName(): string
+    {
+        return $this->channelName;
     }
 }
