@@ -22,6 +22,14 @@ class QueueProviderTest extends TestCase
 
     /**
      * @depends test__construct
+     */
+    public function testGetChannelName(QueueProvider $provider)
+    {
+        self::assertEquals('test', $provider->getChannelName());
+    }
+
+    /**
+     * @depends test__construct
      * @throws \PHPUnit\Framework\MockObject\Exception
      */
     public function testImmutable(QueueProvider $provider): void

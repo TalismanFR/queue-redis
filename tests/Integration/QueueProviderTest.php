@@ -44,4 +44,16 @@ class QueueProviderTest extends TestCase
         $reserv = $provider->reserve($id);
         $this->assertNotNull($reserv);
     }
+
+    /**
+     * @depends test__construct
+     */
+    public function testWithChannelName(QueueProvider $provider): void
+    {
+        self::assertEquals('test', $provider->getChannelName());
+        $providerOther = $provider->withChannelName('test');
+        self::assertEquals($providerOther->getChannelName(), $provider->getChannelName());
+        $providerOther = $provider->withChannelName('test1');
+        self::assertEquals('test1', $providerOther->getChannelName());
+    }
 }

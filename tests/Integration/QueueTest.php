@@ -15,6 +15,7 @@ use Yiisoft\Queue\Queue;
 use Yiisoft\Queue\Redis\Adapter;
 use Yiisoft\Queue\Redis\QueueProvider;
 use Yiisoft\Queue\Redis\QueueProviderInterface;
+use Yiisoft\Queue\Redis\Reserve;
 use Yiisoft\Queue\Redis\Tests\Support\FileHelper;
 use Yiisoft\Queue\Redis\Tests\Support\IntegrationTestCase;
 
@@ -85,6 +86,7 @@ class QueueTest extends IntegrationTestCase
             $mockLoop,
         );
         $queue = $this->getDefaultQueue($adapter);
+        self::assertEquals('yii-queue', $adapter->getChannelName());
 
         $queue->push(
             new Message('ext-simple', ['file_name' => 'test-listen' . $time, 'payload' => ['time' => $time]])
@@ -124,7 +126,10 @@ class QueueTest extends IntegrationTestCase
     public function testAdapterNullMessage()
     {
         $provider = $this->createMock(QueueProviderInterface::class);
-        $provider->method('reserve')->willReturn(null);
+        $provider->method('reserve')->willReturnOnConsecutiveCalls(
+            null, null, null, new Reserve(1, '{"name":"handler"}')
+        );
+        $provider->method('delete');
 
         $mockLoop = $this->createMock(LoopInterface::class);
         $mockLoop->expects($this->exactly(2))->method('canContinue')->willReturn(true, false);
@@ -145,5 +150,11 @@ class QueueTest extends IntegrationTestCase
             $notUseHandler = false;
         });
         $this->assertTrue($notUseHandler);
+
+        $adapter->subscribe(function (MessageInterface $message) use (&$notUseHandler): mixed {
+            $notUseHandler = false;
+            return null;
+        });
+        $this->assertFalse($notUseHandler);
     }
 }
